@@ -15,7 +15,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y nkf imagemagick
+          sudo apt-get install -y imagemagick
 
       - name: Prepare artifact
         run: |
