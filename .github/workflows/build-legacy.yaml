@@ -35,7 +35,7 @@ jobs:
 
           # 画像を Microsoft Internet Explorer 5 互換形式に変換 (JPEG)
           for img in $(find . -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" \)); do
-            base="$(basename "$img")""
+            base=$(basename "$img")
             name="${base%.*}"
             echo "Converting $img -> $name.jpg"
             convert "$img" "artifact/$name.jpg"
