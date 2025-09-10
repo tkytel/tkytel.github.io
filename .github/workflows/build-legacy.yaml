@@ -40,8 +40,11 @@ jobs:
             cp "$f" artifact/
           done
 
-      - name: Upload via FTP
-        run: |
-          curl -v --ftp-create-dirs -T "{artifact/*}" \
-            --user "${{ secrets.FTP_USER }}:${{ secrets.FTP_PASS }}" \
-            "ftp://${{ secrets.FTP_HOST }}/target/path/"
+      - name: Upload files to Xserver Static
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          server-dir: ./
+          local-dir: ./public/
