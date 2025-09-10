@@ -28,9 +28,8 @@ jobs:
             sed 's|<meta charset="utf-8">|<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">|i' "$f" \
               | sed '/rel="stylesheet"/d' \
               | sed 's/webp/jpg/i' \
-              | sed '/property="og:/d' \
               | sed 's|<!DOCTYPE html>|<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/strict.dtd">|i' \
-              | sed '/name="twitter:/d' \
+              | sed -E '/(property="og:|name="twitter:)/d' \
               | nkf -s > "artifact/$(basename $f)"
           done
 
