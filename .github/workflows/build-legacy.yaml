@@ -2,7 +2,7 @@ name: Build and deploy to Xserver Static
 
 on:
   push:
-    branches: ["main"]
+    branches: ["feat-legacy"]
 
 jobs:
   build-and-deploy:
