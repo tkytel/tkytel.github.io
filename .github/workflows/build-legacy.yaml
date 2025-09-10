@@ -24,18 +24,18 @@ jobs:
           # プレーンテキストを SJIS 変換
           for f in $(find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.css" -o -name "*.txt" \)); do
             echo "Converting $f to SJIS..."
-            tmpfile=$(mktemp)
+            tmpfile="$(mktemp)"
             sed 's|<meta charset="utf-8">|<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">|i' "$f" \
               | sed '/rel="stylesheet"/d' \
               | sed 's/webp/jpg/i' \
               | sed 's|<!DOCTYPE html>|<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/strict.dtd">|i' \
               | sed -E '/(property="og:|name="twitter:)/d' \
-              | nkf -s > "artifact/$(basename $f)"
+              | iconv -f UTF-8 -t SHIFT_JIS//TRANSLIT > "artifact/$(basename $f)"
           done
 
           # 画像を Microsoft Internet Explorer 5 互換形式に変換 (JPEG)
           for img in $(find . -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" \)); do
-            base=$(basename "$img")
+            base="$(basename "$img")""
             name="${base%.*}"
             echo "Converting $img -> $name.jpg"
             convert "$img" "artifact/$name.jpg"
