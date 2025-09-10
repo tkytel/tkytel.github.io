@@ -28,6 +28,8 @@ jobs:
             sed 's/charset=["'\'']utf-8["'\'']/charset="Shift_JIS"/i' "$f" \
               | sed '/rel="stylesheet"/d' \
               | sed 's/webp/jpg/i' \
+              | sed '/property="og:/d' \
+              | sed '/name="twitter:/d' \
               | nkf -s > "artifact/$(basename $f)"
           done
 
