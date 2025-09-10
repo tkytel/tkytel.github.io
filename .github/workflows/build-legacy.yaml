@@ -1,0 +1,56 @@
+name: Build and deploy to Xserver Static
+
+on:
+  push:
+    branches: ["feat-legacy"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+      - name: Prepare artifact
+        run: |
+          mkdir artifact
+
+          # プレーンテキストを SJIS 変換
+          for f in $(find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.css" -o -name "*.txt" \)); do
+            echo "Converting $f to SJIS..."
+            tmpfile="$(mktemp)"
+            sed 's|<meta charset="utf-8">|<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">|i' "$f" \
+              | sed '/rel="stylesheet"/d' \
+              | sed 's/webp/jpg/i' \
+              | sed 's|<!DOCTYPE html>|<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/strict.dtd">|i' \
+              | sed -E '/(property="og:|name="twitter:)/d' \
+              | iconv -f UTF-8 -t SHIFT_JIS//TRANSLIT > "artifact/$(basename "$f")"
+          done
+
+          # 画像を Microsoft Internet Explorer 5 互換形式に変換 (JPEG)
+          for img in $(find . -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" \)); do
+            base="$(basename "$img")"
+            name="${base%.*}"
+            echo "Converting $img -> $name.jpg"
+            convert "$img" "artifact/$name.jpg"
+          done
+
+          # その他ファイルをコピー (除外指定あり)
+          for f in $(find . -maxdepth 1 -type f ! -name "LICENSE_CC" ! -name "LICENSE_MIT" ! -name "*.html" ! -name "*.css" ! -name "*.txt" ! -name "*.jpg" ! -name "*.jpeg" ! -name "*.png" ! -name "*.gif" ! -name "*.webp"); do
+            cp "$f" artifact/
+          done
+
+      - name: Upload files to Xserver Static
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          server-dir: ./
+          local-dir: ./artifact/
