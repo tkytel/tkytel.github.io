@@ -1,0 +1,47 @@
+name: Build and deploy to Xserver Static
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nkf imagemagick
+
+      - name: Prepare artifact
+        run: |
+          mkdir artifact
+
+          # プレーンテキストを SJIS 変換
+          for f in $(find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.css" -o -name "*.txt" \)); do
+            echo "Converting $f to SJIS..."
+            nkf -s "$f" > "artifact/$(basename $f)"
+          done
+
+          # 画像を IE5 互換形式に変換 (JPEG)
+          for img in $(find . -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" \)); do
+            base=$(basename "$img")
+            name="${base%.*}"
+            echo "Converting $img -> $name.jpg"
+            convert "$img" "artifact/$name.jpg"
+          done
+
+          # その他ファイルをコピー (除外指定あり)
+          for f in $(find . -maxdepth 1 -type f ! -name "LICENSE_CC" ! -name "LICENSE_MIT" ! -name "*.html" ! -name "*.css" ! -name "*.txt" ! -name "*.jpg" ! -name "*.jpeg" ! -name "*.png" ! -name "*.gif" ! -name "*.webp"); do
+            cp "$f" artifact/
+          done
+
+      - name: Upload via FTP
+        run: |
+          curl -v --ftp-create-dirs -T "{artifact/*}" \
+            --user "${{ secrets.FTP_USER }}:${{ secrets.FTP_PASS }}" \
+            "ftp://${{ secrets.FTP_HOST }}/target/path/"
