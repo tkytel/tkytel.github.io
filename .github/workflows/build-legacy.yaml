@@ -47,4 +47,4 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
           server-dir: ./
-          local-dir: ./public/
+          local-dir: ./artifact/
