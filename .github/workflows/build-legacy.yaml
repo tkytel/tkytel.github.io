@@ -27,6 +27,7 @@ jobs:
             tmpfile=$(mktemp)
             sed 's/charset=["'\'']utf-8["'\'']/charset="Shift_JIS"/i' "$f" \
               | sed '/rel="stylesheet"/d' \
+              | sed 's/webp/jpg/i' \
               | nkf -s > "artifact/$(basename $f)"
           done
 
