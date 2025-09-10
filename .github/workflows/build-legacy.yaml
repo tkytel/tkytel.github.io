@@ -24,7 +24,9 @@ jobs:
           # プレーンテキストを SJIS 変換
           for f in $(find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.css" -o -name "*.txt" \)); do
             echo "Converting $f to SJIS..."
-            nkf -s "$f" > "artifact/$(basename $f)"
+            tmpfile=$(mktemp)
+            sed 's/charset=["'\'']utf-8["'\'']/charset=Shift_JIS/i' "$f" > "$tmpfile"
+            nkf -s "$tmpfile" > "artifact/$(basename $f)"
           done
 
           # 画像を IE5 互換形式に変換 (JPEG)
