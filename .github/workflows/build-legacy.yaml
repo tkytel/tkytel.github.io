@@ -30,6 +30,7 @@ jobs:
               | sed '/rel="stylesheet"/d' \
               | sed 's/webp/jpg/i' \
               | sed 's|<!DOCTYPE html>|<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/strict.dtd">|i' \
+              | sed 's/<head[[:space:]]*.*/<head>/' \
               | sed -E '/(property="og:|name="twitter:)/d' \
               | iconv -f UTF-8 -t SHIFT_JIS//TRANSLIT > "artifact/$(basename "$f")"
           done
